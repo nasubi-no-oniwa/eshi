@@ -341,7 +341,7 @@
   function rakuTick() {
     if (!raku) return;
     const left = Math.max(0, Math.ceil((raku.until - EK.now()) / 1000));
-    const el = $('ed-timer'); el.textContent = Math.min(60, left);   // はじまりの少しの待ち時間は見せない el.classList.toggle('hurry', left <= 10);
+    const el = $('ed-timer'); el.textContent = Math.min(60, left); el.classList.toggle('hurry', left <= 10);   // はじまりの少しの待ち時間は見せない
     if (left <= 0) finish();
   }
   $('ed-sample').onclick = () => {
