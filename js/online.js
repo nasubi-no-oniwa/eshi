@@ -54,7 +54,7 @@
 
   class OnlineRoom {
     constructor(db, code, name, charStr, cb, want) {
-      this.db = db; this.code = clean(code); this.name = (String(name || '').trim().slice(0, 8)) || 'ななし';
+      this.db = db; this.code = clean(code); this.name = (String(name || '').trim().slice(0, 8)) || I18N.t('noname');
       this.want = want === 'raku' ? 'raku' : 'normal'; this.mode = this.want; this.watching = false; this.watchers = 0; this.rch = {};
       this.charStr = charStr; this.cb = cb || {}; this.id = uid(); this.slot = -1;
       this.players = {}; this.ready = {}; this.chars = {}; this.game = null; this.round = 0; this.ended = {};
@@ -64,7 +64,7 @@
     now() { return Date.now() + this.offset; }
     on(ref, ev, fn) { ref.on(ev, fn); this.subs.push([ref, ev, fn]); }
     async join() {
-      if (!this.code) throw new Error('あいことばを入れてください');
+      if (!this.code) throw new Error(I18N.t('err_code_short'));
       this.on(this.db.ref('.info/serverTimeOffset'), 'value', s => { this.offset = s.val() || 0; });
       for (const s of [0, 1]) {
         const ref = this.root.child('players/' + s);
@@ -99,7 +99,7 @@
     }
     async joinWatch() {
       const w = (await this.root.child('watchers').once('value')).val() || {};
-      if (Object.keys(w).length >= 10) throw new Error('この部屋は観戦の人でいっぱいです（10人まで）');
+      if (Object.keys(w).length >= 10) throw new Error(I18N.t('room_full'));
       this.watching = true; this.slot = -1;
       const me = this.root.child('watchers/' + this.id);
       await me.set({ name: this.name }); me.onDisconnect().remove();

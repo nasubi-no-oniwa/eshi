@@ -3,8 +3,9 @@
 // =============================================
 (function () {
   const $ = id => document.getElementById(id);
+  const T = I18N.t;
   const C = EK.CONFIG, LIMBS = EK.CH.LIMBS;
-  const LN = { armL: '左うで', armR: '右うで', legL: '左あし', legR: '右あし' };
+  const LN = EK.CH.NAMES;
   function show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id)); }
   EK.toast = t => { const el = $('toast'); el.textContent = t; el.classList.add('show'); clearTimeout(EK.toast.tm); EK.toast.tm = setTimeout(() => el.classList.remove('show'), 1800); };
 
@@ -41,10 +42,10 @@
   const preview = (ch, cv) => EK.drawPreview(ch, cv);
   function refreshTitle() {
     preview(myChar, $('t-preview'));
-    $('t-name').textContent = myChar ? (myChar.name || 'なまえなし') : 'まだキャラがいません';
-    $('btn-edit').textContent = myChar ? 'キャラをなおす' : 'キャラをつくる';
-    const n = EK.Pool.list().length; $('t-pool').textContent = n ? 'ライバル帳 ' + n + '体（CPUの相手に出てきます）' : '';
-    $('t-id').innerHTML = myChar && myChar.id ? 'ID：' + myChar.id + '<button id="t-id-copy">コピー</button>' : '';
+    $('t-name').textContent = myChar ? (myChar.name || T('noname_c')) : T('no_char');
+    $('btn-edit').textContent = myChar ? T('edit_char') : T('make_char');
+    const n = EK.Pool.list().length; $('t-pool').textContent = n ? T('pool', { n }) : '';
+    $('t-id').innerHTML = myChar && myChar.id ? T('id_c') + myChar.id + '<button id="t-id-copy">' + T('copy') + '</button>' : '';
     const cb = $('t-id-copy'); if (cb) cb.onclick = () => copyText(myChar.id, cb);
     if (myChar && myChar.id) checkMyId(myChar.id);
   }
@@ -54,14 +55,15 @@
     if (!(id in idChecked)) idChecked[id] = await EK.Store.exists(id);
     if (idChecked[id] !== false || !myChar || myChar.id !== id) return;
     const msg = await EK.Store.goneMsg(id).catch(() => '');
-    $('t-id').innerHTML = '<s>ID：' + id + '</s><br><span class="gone">' + esc(msg.replace(/（.*）/, '')) + '</span><button id="t-id-new">もう一度IDをもらう</button>';
+    $('t-id').innerHTML = '<s>' + T('id_c') + id + '</s><br><span class="gone">' + esc(msg.replace(/（.*）|\s*\(.*\)/, '')) + '</span><button id="t-id-new">' + T('id_again') + '</button>';
     $('t-id-new').onclick = () => { myChar.par = ''; myChar.id = ''; EK.saveChar(myChar); openSave(myChar, { done: refreshTitle }); };
   }
   async function copyText(t, b) {
-    try { await navigator.clipboard.writeText(t); if (b) { const o = b.textContent; b.textContent = 'コピーしました'; setTimeout(() => { b.textContent = o; }, 1500); } }
-    catch (e) { EK.toast('ID：' + t); }
+    try { await navigator.clipboard.writeText(t); if (b) { const o = b.textContent; b.textContent = T('copied2'); setTimeout(() => { b.textContent = o; }, 1500); } }
+    catch (e) { EK.toast(T('id_c') + t); }
   }
   EK.loadChar().then(c => { myChar = c; refreshTitle(); });
+  document.addEventListener('langchange', () => { if ($('title').classList.contains('active')) refreshTitle(); });
   function openEditor(after) {
     show('editor');
     EK.Editor.open(myChar, (ch, info) => {
@@ -79,7 +81,7 @@
   $('btn-howto-close').onclick = () => $('ov-howto').classList.remove('show');
   document.querySelectorAll('.btn.lv').forEach(b => b.addEventListener('click', () => {
     beep(660, 0.05); level = b.dataset.level;
-    if (!myChar) { EK.toast('まずはキャラを描こう！'); openEditor(() => startCpu()); return; }
+    if (!myChar) { EK.toast(T('draw_first')); openEditor(() => startCpu()); return; }
     startCpu();
   }));
 
@@ -174,7 +176,7 @@
     const l = new THREE.Line(g, new THREE.LineDashedMaterial({ color: '#e5484d', dashSize: 0.06, gapSize: 0.04, linewidth: 2 }));
     l.computeLineDistances(); l.position.y = 0.04; l.visible = false; world.add(l); return l;
   })();
-  let match = null, models = [], shadows = [], flies = [], cpu = null, mode = 'cpu', mine = 0, acc = 0, goAt = 0, names = ['あなた', 'CPU'];
+  let match = null, models = [], shadows = [], flies = [], cpu = null, mode = 'cpu', mine = 0, acc = 0, goAt = 0, names = [T('you'), 'CPU'];
   let room = null, sendT = 0, lastNetTime = 0, resultShown = false, leftNote = '';
   const camPos = new THREE.Vector3(0, 6, 14), camLook = new THREE.Vector3(0, 1.5, 0);
   // 3Dの部品を、GPUのメモリからも消す（何回も遊ぶと重くならないように）
@@ -212,9 +214,9 @@
     const pool = EK.Pool.list();
     let s = forced || null;
     const k = Math.floor(Math.random() * (pool.length + 2));
-    if (!s && k >= 2) { try { const c = await EK.unpackChar(pool[k - 2].s); c.name = c.name || (pool[k - 2].from === 'self' ? '前のキャラ' : 'ライバル'); s = c; } catch (e) {} }
+    if (!s && k >= 2) { try { const c = await EK.unpackChar(pool[k - 2].s); c.name = c.name || (pool[k - 2].from === 'self' ? T('prev_char') : T('rival')); s = c; } catch (e) {} }
     if (!s) { const key = k === 1 ? ['easy', 'normal', 'hard'][Math.floor(Math.random() * 3)] : level; s = EK.sampleChars(key)[key]; }
-    names = [myChar.name || 'あなた', (s.name || 'ななし') + '（' + { easy: 'よわい', normal: 'ふつう', hard: 'つよい' }[level] + '）'];
+    names = [myChar.name || T('you'), T('cpu_name', { name: s.name || T('noname'), lv: T(level) })];
     setupMatch(myChar, s, {});
     cpu = new EK.Cpu(match, 1, level);
     intro();
@@ -238,7 +240,7 @@
     for (const i of [0, 1]) {
       const slot = i === 0 ? mine : 1 - mine;
       $('nm' + i).textContent = names[slot] || '？';
-      $('bars' + i).innerHTML = DOLL + '<div class="nums">' + LIMBS.map(p => `<span data-p="${p}">${LN[p]}<b>100</b></span>`).join('') + '</div>';
+      $('bars' + i).innerHTML = DOLL + '<div class="nums">' + LIMBS.map(p => `<span data-p="${p}">${T('ps_' + p)}<b>100</b></span>`).join('') + '</div>';
     }
   }
   const durCol = v => v <= 0 ? '#b8b2a7' : v > 60 ? '#22c55e' : v > 30 ? '#f5b800' : '#ef4444';
@@ -246,7 +248,7 @@
     for (const i of [0, 1]) {
       const f = match.f[i === 0 ? mine : 1 - mine], el = $('bars' + i);
       el.querySelectorAll('path[data-p]').forEach(pth => { const p = pth.dataset.p, v = f.gone[p] ? 0 : f.dur[p] / C.DUR * 100; pth.style.stroke = durCol(v); pth.classList.toggle('gone', !!f.gone[p]); pth.classList.toggle('hit', f.flash[p] > 0); });
-      el.querySelectorAll('.nums span').forEach(sp => { const p = sp.dataset.p, v = f.gone[p] ? 0 : Math.ceil(f.dur[p] / C.DUR * 100); sp.querySelector('b').textContent = f.gone[p] ? 'もげた' : v; sp.style.color = durCol(v); sp.classList.toggle('gone', !!f.gone[p]); });
+      el.querySelectorAll('.nums span').forEach(sp => { const p = sp.dataset.p, v = f.gone[p] ? 0 : Math.ceil(f.dur[p] / C.DUR * 100); sp.querySelector('b').textContent = f.gone[p] ? T('gone_l') : v; sp.style.color = durCol(v); sp.classList.toggle('gone', !!f.gone[p]); });
     }
     const t = Math.ceil(match.time); $('timer').textContent = t; $('timer').classList.toggle('hurry', t <= 10);
   }
@@ -282,9 +284,10 @@
   const bangs = [];
   // 自分の攻撃は青、相手の攻撃は赤の「バシッ」
   function bang(x, y, z, crit, mineAtk) {
+    if (BANG && BANG.lang !== I18N.lang) { for (const t of [...BANG.me, ...BANG.op, BANG.meC, BANG.opC]) t.dispose(); BANG = null; }
     if (!BANG) BANG = {
-      me: [bangTex('バシッ', '#8ec5ff'), bangTex('ドカッ', '#8ec5ff'), bangTex('ボコッ', '#8ec5ff')], meC: bangTex('ガツン!', '#3b82f6'),
-      op: [bangTex('バシッ', '#ff9a9a'), bangTex('ドカッ', '#ff9a9a'), bangTex('ボコッ', '#ff9a9a')], opC: bangTex('ガツン!', '#e5484d') };
+      me: [bangTex(T('bang1'), '#8ec5ff'), bangTex(T('bang2'), '#8ec5ff'), bangTex(T('bang3'), '#8ec5ff')], meC: bangTex(T('bangC'), '#3b82f6'),
+      op: [bangTex(T('bang1'), '#ff9a9a'), bangTex(T('bang2'), '#ff9a9a'), bangTex(T('bang3'), '#ff9a9a')], opC: bangTex(T('bangC'), '#e5484d'), lang: I18N.lang };
     const tex = mineAtk ? (crit ? BANG.meC : BANG.me[Math.floor(Math.random() * 3)]) : (crit ? BANG.opC : BANG.op[Math.floor(Math.random() * 3)]);
     const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false }));
     sp.position.set(x, y + 0.2, z + 0.3); sp.renderOrder = 10; world.add(sp);
@@ -314,14 +317,14 @@
       stopT = Math.max(stopT, e.crit ? 0.13 : 0.075);          // ヒットストップ
       if (mode !== 'watch') { if (e.to === mine) buzz(e.crit ? 90 : 45); else buzz(18); }
       burst(e.x, e.y, e.z, e.crit ? '#f5b800' : '#ffffff', e.crit ? 14 : 8);
-      popAt(e.x, e.y + 0.4, e.z, (mode === 'watch' ? 'ヒット！' : mineAtk ? 'ヒット！' : 'いたっ！') + (e.crit ? 'クリティカル ' : '') + e.dmg, (mineAtk ? 'mine' : 'theirs') + (e.crit ? ' crit' : ''));
+      popAt(e.x, e.y + 0.4, e.z, (mode === 'watch' ? T('hit_pop') : mineAtk ? T('hit_pop') : T('ouch')) + (e.crit ? T('crit') : '') + e.dmg, (mineAtk ? 'mine' : 'theirs') + (e.crit ? ' crit' : ''));
       shake = Math.max(shake, e.crit ? 0.35 : 0.15);
       if (e.net && room) room.sendHit({ to: e.to, part: e.part, dmg: e.dmg, crit: !!e.crit, stun: e.stun || 0, kx: e.kx || 0, kz: e.kz || 0, x: e.x, y: e.y, z: e.z });
     }
     else if (e.type === 'break') breakFx(e.slot, e.part, e.dir);
-    else if (e.type === 'squeeze') { EK.toast('なかなか当たらないので、かべがせまくなってきた！'); }
+    else if (e.type === 'squeeze') { EK.toast(T('squeeze')); }
     else if (e.type === 'spurt') {
-      const bm = $('big-msg'); bm.innerHTML = 'ラストスパート！<small>ダメージがどんどん上がる・かべがせまくなる</small>'; bm.classList.add('show');
+      const bm = $('big-msg'); bm.innerHTML = T('spurt'); bm.classList.add('show');
       [523, 659, 784, 1047, 1319].forEach((f, i) => beep(f, 0.12, 'square', 0.05, i * 0.07)); setTimeout(() => bm.classList.remove('show'), 1800);
     }
     else if (e.type === 'over') finish(e.winner, e.why);
@@ -329,7 +332,7 @@
   function breakFx(slot, part, dir) {
     snd.brk(); shake = 0.5;
     const fl = EK.detach(models[slot], part, world, dir || 1); if (fl) flies.push(fl);
-    const f = match.f[slot]; popAt(f.x, f.y + 2.4, f.z, LN[part] + 'がもげた！', 'break');
+    const f = match.f[slot]; popAt(f.x, f.y + 2.4, f.z, T('part_off', { p: LN[part] }), 'break');
   }
 
   // ---------- 操作 ----------
@@ -370,7 +373,7 @@
   function finish(w, why) {
     if (resultShown) return; resultShown = true;
     const meWin = w === mine, watch = mode === 'watch';
-    const wtxt = w === -1 ? 'ひきわけ' : watch ? (names[w] || '？') + 'のかち！' : meWin ? 'かち！' : 'まけ…';
+    const wtxt = w === -1 ? T('draw') : watch ? T('win_of', { name: names[w] || '？' }) : meWin ? T('win') : T('lose');
     const bm = $('big-msg'); bm.textContent = wtxt; bm.classList.add('show');
     meWin || watch ? snd.win() : snd.lose();
     setTimeout(() => {
@@ -378,13 +381,13 @@
       const t = $('res-title'); t.textContent = wtxt; t.className = meWin || watch ? 'win' : 'lose'; t.classList.toggle('small', watch);
       const f = match ? match.f : null, cnt = s => f ? f[s].limbs().length : 0;
       const tie = why === 'time' && cnt(0) === cnt(1);
-      $('res-sub').textContent = (why === 'time' ? '時間切れ' + (tie && w !== -1 ? '（本数が同じなので、残りの耐久で判定）' : '') : why === 'left' ? 'あいてが退室しました' : 'KO') + `\n残ったうで・あし　${names[mine]} ${cnt(mine)}本 － ${cnt(1 - mine)}本 ${names[1 - mine]}`;
-      $('btn-again').hidden = (mode === 'online' && why === 'left') || watch; $('btn-again').disabled = false; $('again-msg').textContent = watch ? 'つぎの試合が始まると、自動で見られます' : '';
+      $('res-sub').textContent = (why === 'time' ? T('timeup') + (tie && w !== -1 ? T('tie_note') : '') : why === 'left' ? T('left') : 'KO') + '\n' + T('res_line', { a: names[mine], x: cnt(mine), y: cnt(1 - mine), b: names[1 - mine] });
+      $('btn-again').hidden = (mode === 'online' && why === 'left') || watch; $('btn-again').disabled = false; $('again-msg').textContent = watch ? T('auto_watch') : '';
       $('btn-reedit').hidden = mode !== 'cpu';
       $('btn-savedraw').hidden = !(rakuChar && mode === 'online'); $('btn-savedraw').disabled = false;
       // おたがいの絵をならべて見る
       for (const i of [0, 1]) { const slot = i ? 1 - mine : mine; preview(matchChars[slot], $('g' + i)); $('gn' + i).textContent = names[slot] || '？'; }
-      $('btn-keep').disabled = false; $('btn-keep').textContent = watch ? '2体ともライバル帳に入れる' : '相手のキャラをライバル帳に入れる';
+      $('btn-keep').disabled = false; $('btn-keep').textContent = watch ? T('keep_both') : T('keep_one');
       $('ov-result').classList.add('show');
     }, 1600);
   }
@@ -392,12 +395,12 @@
     const c = matchChars[1 - mine]; if (!c) return;
     let ok = EK.Pool.add(c, 'rival');
     if (mode === 'watch' && matchChars[mine]) ok = EK.Pool.add(matchChars[mine], 'rival') && ok;
-    $('btn-keep').disabled = true; $('btn-keep').textContent = ok ? 'ライバル帳に入れました（CPUの相手に出てきます）' : '保存できませんでした';
+    $('btn-keep').disabled = true; $('btn-keep').textContent = ok ? T('keep_done') : T('save_fail');
     refreshTitle();
   };
   $('btn-again').onclick = () => {
     if (mode === 'cpu') return startCpu();
-    if (room) { room.rematch(); $('btn-again').disabled = true; $('again-msg').textContent = 'あいての「もう一回」を待っています…'; }
+    if (room) { room.rematch(); $('btn-again').disabled = true; $('again-msg').textContent = T('wait_rematch'); }
   };
   $('btn-reedit').onclick = () => { $('ov-result').classList.remove('show'); clearMatch(); openEditor(() => startCpu()); };
   function toTitle() {
@@ -500,28 +503,28 @@
   $('btn-online-close').onclick = () => { leaveRoom(); $('ov-online').classList.remove('show'); };
   $('btn-copy').onclick = async () => {
     const url = location.origin + location.pathname + '?room=' + encodeURIComponent(room ? room.code : '');
-    try { await navigator.clipboard.writeText(url); $('btn-copy').textContent = 'コピーしました！'; } catch (e) { prompt('このリンクを送ってください', url); }
-    setTimeout(() => { $('btn-copy').textContent = 'さそうリンクをコピー'; }, 2000);
+    try { await navigator.clipboard.writeText(url); $('btn-copy').textContent = T('copied'); } catch (e) { prompt(T('send_link'), url); }
+    setTimeout(() => { $('btn-copy').textContent = T('copy_link'); }, 2000);
   };
   $('btn-join').onclick = joinOnline;
   $('in-code').addEventListener('keydown', e => { if (e.key === 'Enter') joinOnline(); });
-  const NOCHAR = 'この部屋は「いまのキャラで」対戦です。先にキャラをつくるか、IDでよんでね';
+  const NOCHAR = () => T('no_char_room');
   async function joinOnline() {
-    const code = EK.cleanCode($('in-code').value), name = $('in-name').value.trim().slice(0, 8) || 'ななし';
-    if (!code) { $('online-err').textContent = 'あいことばを入れてください（. # $ / [ ] は使えません）'; return; }
+    const code = EK.cleanCode($('in-code').value), name = $('in-name').value.trim().slice(0, 8) || T('noname');
+    if (!code) { $('online-err').textContent = T('err_code'); return; }
     try { localStorage.setItem('ek-name', name); } catch (e) {}
-    $('online-err').textContent = ''; $('btn-join').disabled = true; $('btn-join').textContent = 'つないでいます…';
+    $('online-err').textContent = ''; $('btn-join').disabled = true; $('btn-join').textContent = T('connecting');
     try {
       const db = await getDb();
       leaveRoom();
       const r = new EK.OnlineRoom(db, code, name, myChar ? EK.packChar(myChar, 0.5) : null, {
         onPeople: p => {
           if (room !== r) return;
-          if (r.watching) { if (!p.names[0] && !p.names[1]) EK.toast('対戦している人がいなくなりました'); return; }
-          if (!p.names[1 - r.slot]) { $('wait-msg').textContent = 'あいてを待っています…'; if (resultShown && mode === 'online') { $('btn-again').hidden = true; $('again-msg').textContent = 'あいてが退室しました'; } }
+          if (r.watching) { if (!p.names[0] && !p.names[1]) EK.toast(T('nobody')); return; }
+          if (!p.names[1 - r.slot]) { $('wait-msg').textContent = T('waiting'); if (resultShown && mode === 'online') { $('btn-again').hidden = true; $('again-msg').textContent = T('left'); } }
         },
-        onMode: m => { if (room !== r) return; showModeMsg(r); if (m === 'normal' && !myChar) { leaveRoom(); lobby(false); $('online-err').textContent = NOCHAR; } },
-        onWatchers: n => { if (room !== r) return; $('watchers').hidden = !n; $('watchers').textContent = '👀 ' + n + '人'; },
+        onMode: m => { if (room !== r) return; showModeMsg(r); if (m === 'normal' && !myChar) { leaveRoom(); lobby(false); $('online-err').textContent = NOCHAR(); } },
+        onWatchers: n => { if (room !== r) return; $('watchers').hidden = !n; $('watchers').textContent = T('watch_n', { n }); },
         onDraw: g => { if (room === r) startDraw(g); },
         onStart: g => { if (room === r) (g.watching ? watchStart(g) : onlineStart(g)); },
         onState: (st, k) => {
@@ -534,10 +537,10 @@
         onWatchHit: h => { if (room === r && mode === 'watch' && !h.dodge) watchHits.push(Object.assign({ at: performance.now() }, h)); },
         onHit: h => {
           if (room !== r || !match || mode !== 'online' || match.over) return;
-          if (h.dodge) { popAt(h.x, h.y + 0.5, h.z, 'よけられた！', 'theirs'); return; }
+          if (h.dodge) { popAt(h.x, h.y + 0.5, h.z, T('dodged_by'), 'theirs'); return; }
           // 受けた側の画面でも、本当に当たる場所にいたか確かめる（通信のおくれで「よけたのに当たった」を防ぐ）
           const me = match.f[mine];
-          if (!match.contact(me, [h.x, h.y, h.z], 0.6)) { popAt(me.x, me.y + 2.2, me.z, 'よけた！', 'mine'); room.sendHit({ to: 1 - mine, part: 'none', dmg: 0, dodge: true, x: h.x, y: h.y, z: h.z }); return; }
+          if (!match.contact(me, [h.x, h.y, h.z], 0.6)) { popAt(me.x, me.y + 2.2, me.z, T('dodged'), 'mine'); room.sendHit({ to: 1 - mine, part: 'none', dmg: 0, dodge: true, x: h.x, y: h.y, z: h.z }); return; }
           match.applyHit(me, { type: 'hit', from: 1 - mine, to: mine, part: h.part, dmg: h.dmg, crit: h.crit, stun: h.stun, kx: h.kx, kz: h.kz || 0, x: h.x, y: h.y, z: h.z });
         },
         onCheer: v => { if (room === r) cheerPop(v); },
@@ -545,29 +548,29 @@
       }, want);
       room = r;
       const res = await r.join();
-      if (!res.watching && res.mode === 'normal' && !myChar) { leaveRoom(); throw new Error(NOCHAR); }
+      if (!res.watching && res.mode === 'normal' && !myChar) { leaveRoom(); throw new Error(NOCHAR()); }
       $('wait-code').textContent = r.code; lobby(true);
-      $('wait-msg').textContent = res.watching ? '観戦で入りました。つぎの試合を待っています…' : 'あいてを待っています…';
+      $('wait-msg').textContent = res.watching ? T('watch_in2') : T('waiting');
       showModeMsg(r);
-    } catch (e) { $('online-err').textContent = e.message || 'つながりませんでした'; leaveRoom(); }
-    $('btn-join').disabled = false; $('btn-join').textContent = 'はいる';
+    } catch (e) { $('online-err').textContent = e.message || T('err_conn'); leaveRoom(); }
+    $('btn-join').disabled = false; $('btn-join').textContent = T('join');
   }
-  function showModeMsg(r) { $('wait-code').textContent = r.code + '（' + (r.mode === 'raku' ? 'らくがきバトル' : 'いまのキャラで') + '）'; }
+  function showModeMsg(r) { $('wait-code').textContent = T('code_mode', { c: r.code, m: T(r.mode === 'raku' ? 'raku' : 'mode_now') }); }
 
   // ---------- らくがきバトル：60秒で描く ----------
   function startDraw(g) {
     $('ov-online').classList.remove('show'); $('ov-result').classList.remove('show'); $('ov-reveal').classList.remove('show');
     clearMatch(); watchUi(false); rakuChar = null;
-    if (g.slot < 0) { mode = 'watch'; drawWait(g.until, 'ふたりが描いています', '描きおわったら「せーの」で発表！', true); return; }
+    if (g.slot < 0) { mode = 'watch'; drawWait(g.until, T('dw_title0'), T('dw_watch_msg'), true); return; }
     mode = 'online';
     show('editor');
-    EK.toast('60秒で描こう！ 時間になったら自動で完成');
+    EK.toast(T('draw60'));
     EK.Editor.open(null, ch => {
       const c = EK.cloneChar(ch); c.id = ''; c.name = c.name || (g.names[g.slot] || '');
       EK.stickBody(c);                  // 体を描けなかったら、黒い棒人間
       rakuChar = c;
       if (room) room.submitDraw(EK.packChar(c, 0.5));
-      drawWait(g.until, 'できた！', 'あいてが描きおわるのを待っています…', false);
+      drawWait(g.until, T('dw_done'), T('dw_wait'), false);
     }, { until: g.until });
   }
   function drawWait(until, title, msg, cheer) {
@@ -583,8 +586,8 @@
     $('ov-drawwait').classList.remove('show'); clearInterval(dwTm);
     const rv = document.querySelector('.reveal'); rv.classList.remove('open');
     for (const i of [0, 1]) { preview(chs[i], $('rv' + i)); $('rvn' + i).textContent = nm[i] || '？'; }
-    $('rv-say').textContent = 'せーの…'; $('ov-reveal').classList.add('show'); snd.count();
-    setTimeout(() => { rv.classList.add('open'); $('rv-say').textContent = 'ドン！'; snd.go(); }, 1300);
+    $('rv-say').textContent = T('rv_ready'); $('ov-reveal').classList.add('show'); snd.count();
+    setTimeout(() => { rv.classList.add('open'); $('rv-say').textContent = T('rv_go'); snd.go(); }, 1300);
     setTimeout(() => { $('ov-reveal').classList.remove('show'); after(); }, 3700);
   }
   async function getChars(g) {
@@ -654,7 +657,7 @@
     el.innerHTML = '<span>' + (CHEER[v.e] || '👏') + '</span><small>' + esc(String(v.n || '').slice(0, 8)) + '</small>';
     el.style.left = (8 + Math.random() * 78) + '%'; cheerLayer.appendChild(el); setTimeout(() => el.remove(), 2300);
   }
-  $('btn-savedraw').onclick = () => { if (rakuChar) openSave(rakuChar, { raku: true, done: () => { $('btn-savedraw').disabled = true; $('btn-savedraw').textContent = '保存しました'; } }); };
+  $('btn-savedraw').onclick = () => { if (rakuChar) openSave(rakuChar, { raku: true, done: () => { $('btn-savedraw').disabled = true; $('btn-savedraw').textContent = T('saved'); } }); };
 
   function onlineTick(dt, now) {
     if (mode !== 'online') return;
@@ -678,8 +681,8 @@
     $('sv-form').hidden = false; $('sv-done').hidden = true; $('sv-err').textContent = '';
     $('sv-author').value = EK.Store.author(); $('sv-pub').checked = false;
     $('sv-mine-l').hidden = !saveCtx.opt.raku; $('sv-mine').checked = true;
-    $('sv-skip').textContent = saveCtx.opt.raku ? '保存しない' : 'IDなしで使う';
-    $('sv-title').textContent = saveCtx.opt.raku ? '描いたキャラを保存' : 'キャラにIDをつける';
+    $('sv-skip').textContent = T(saveCtx.opt.raku ? 'sv_nosave' : 'sv_skip');
+    $('sv-title').textContent = T(saveCtx.opt.raku ? 'sv_title_raku' : 'sv_title');
     $('ov-save').classList.add('show');
   }
   function closeSave() { $('ov-save').classList.remove('show'); const c = saveCtx; saveCtx = null; if (c && c.opt.done) c.opt.done(); }
@@ -689,16 +692,16 @@
     if (!saveCtx) return;
     const { ch, opt } = saveCtx, author = $('sv-author').value.trim().slice(0, 8);
     EK.Store.setAuthor(author);
-    $('sv-ok').disabled = true; $('sv-ok').textContent = '保存しています…'; $('sv-err').textContent = '';
+    $('sv-ok').disabled = true; $('sv-ok').textContent = T('sv_saving'); $('sv-err').textContent = '';
     try {
       const id = await EK.Store.save(ch, { author, pub: $('sv-pub').checked, par: ch.par });
-      ch.id = id; ch.author = author || 'ななし'; delete ch.par;
+      ch.id = id; ch.author = author || T('noname'); delete ch.par;
       if (opt.raku && $('sv-mine').checked) { const old = myChar; myChar = EK.cloneChar(ch); if (old) EK.freeChar(old); EK.Pool.add(myChar, 'self'); }
       if (myChar && (myChar === ch || myChar.id === id)) EK.saveChar(myChar);
       refreshTitle();
       $('sv-id').textContent = id; $('sv-form').hidden = true; $('sv-done').hidden = false;
-    } catch (e) { $('sv-err').textContent = (e && e.message) || '保存できませんでした。通信を確認してね'; }
-    $('sv-ok').disabled = false; $('sv-ok').textContent = '保存してIDをもらう';
+    } catch (e) { $('sv-err').textContent = (e && e.message) || T('sv_fail'); }
+    $('sv-ok').disabled = false; $('sv-ok').textContent = T('sv_ok');
   };
   $('sv-copy').onclick = () => copyText($('sv-id').textContent, $('sv-copy'));
 
@@ -706,13 +709,13 @@
   $('btn-find').onclick = () => {
     $('find-err').textContent = ''; $('in-id').value = '';
     const L = EK.Store.mine();
-    $('my-ids').innerHTML = L.length ? '<p>このスマホでつくったキャラ</p>' + L.slice(0, 8).map(e => `<button data-id="${e.id}"><span>${esc(e.name || 'なまえなし')}${e.pub ? '（公開）' : ''}</span><b>${e.id}</b></button>`).join('') : '';
+    $('my-ids').innerHTML = L.length ? '<p>' + T('my_ids') + '</p>' + L.slice(0, 8).map(e => `<button data-id="${e.id}"><span>${esc(e.name || T('noname_c'))}${e.pub ? T('pub_mark') : ''}</span><b>${e.id}</b></button>`).join('') : '';
     $('ov-find').classList.add('show'); markGone();
   };
   async function markGone() {
     for (const b of $('my-ids').querySelectorAll('button[data-id]')) {
       const ok = await EK.Store.exists(b.dataset.id);
-      if (ok === false) { b.classList.add('gone'); b.querySelector('span').insertAdjacentHTML('beforeend', '<em>（削除ずみ）</em>'); }
+      if (ok === false) { b.classList.add('gone'); b.querySelector('span').insertAdjacentHTML('beforeend', '<em>' + T('deleted') + '</em>'); }
     }
   }
   $('my-ids').onclick = e => { const b = e.target.closest('button[data-id]'); if (b) { $('in-id').value = b.dataset.id; findGo(); } };
@@ -722,10 +725,10 @@
   $('btn-find-go').onclick = findGo;
   async function findGo() {
     const id = EK.cleanId($('in-id').value);
-    if (!EK.isId(id)) { $('find-err').textContent = 'IDは英数字8文字です（0・1・O・I・L は使われていません）'; return; }
+    if (!EK.isId(id)) { $('find-err').textContent = T('id_bad2'); return; }
     $('find-err').textContent = ''; $('btn-find-go').disabled = true; $('btn-find-go').textContent = '…';
-    try { openChar(await EK.Store.load(id)); } catch (e) { $('find-err').textContent = e.message || '見つかりませんでした'; }
-    $('btn-find-go').disabled = false; $('btn-find-go').textContent = 'よぶ';
+    try { openChar(await EK.Store.load(id)); } catch (e) { $('find-err').textContent = e.message || T('not_found'); }
+    $('btn-find-go').disabled = false; $('btn-find-go').textContent = T('call');
   }
   // ---------- よんだキャラ：自分で使う・CPUの相手・ライバル帳 ----------
   let cur = null;
@@ -733,13 +736,13 @@
     if (cur && cur.ch !== myChar) EK.freeChar(cur.ch);
     cur = r; const m = r.meta;
     preview(r.ch, $('cd-prev'));
-    $('cd-name').textContent = m.name || 'なまえなし';
-    $('cd-meta').textContent = 'ID ' + m.id + '　作：' + (m.author || 'ななし') + '　使われた回数 ' + m.uses;
+    $('cd-name').textContent = m.name || T('noname_c');
+    $('cd-meta').textContent = T('cd_meta', { id: m.id, a: m.author || T('noname'), n: m.uses });
     $('cd-err').textContent = '';
-    $('cd-keep').disabled = false; $('cd-keep').textContent = 'ライバル帳に入れる';
+    $('cd-keep').disabled = false; $('cd-keep').textContent = T('cd_keep');
     const own = EK.Store.owns(m.id);
-    $('cd-report').hidden = !m.pub || own; $('cd-report').disabled = EK.Store.reported(m.id); $('cd-report').textContent = EK.Store.reported(m.id) ? '通報ずみ' : '通報する';
-    $('cd-del').hidden = !own; $('cd-del').textContent = 'このキャラを消す';
+    $('cd-report').hidden = !m.pub || own; $('cd-report').disabled = EK.Store.reported(m.id); $('cd-report').textContent = EK.Store.reported(m.id) ? T('reported') : T('report');
+    $('cd-del').hidden = !own; $('cd-del').textContent = T('del_char');
     $('ov-char').classList.add('show');
   }
   function closeChar(keep) { $('ov-char').classList.remove('show'); if (!keep && cur && cur.ch !== myChar) EK.freeChar(cur.ch); cur = null; }
@@ -749,34 +752,34 @@
     const old = myChar; myChar = cur.ch; if (old && old !== myChar) EK.freeChar(old);
     EK.saveChar(myChar); EK.Store.touch(cur.meta.id);
     closeChar(true); for (const o of ['ov-find', 'ov-gal']) $(o).classList.remove('show');
-    refreshTitle(); EK.toast('「' + (myChar.name || 'なまえなし') + '」を自分のキャラにしました');
+    refreshTitle(); EK.toast(T('use_done', { name: myChar.name || T('noname_c') }));
   };
   $('cd-lv').onclick = e => {
     const b = e.target.closest('button[data-level]'); if (!b || !cur) return;
-    if (!myChar) { $('cd-err').textContent = '先に自分のキャラをつくるか、「自分のキャラにする」をえらんでね'; return; }
+    if (!myChar) { $('cd-err').textContent = T('cd_need'); return; }
     level = b.dataset.level; const ch = cur.ch; EK.Store.touch(cur.meta.id);
     closeChar(true); for (const o of ['ov-find', 'ov-gal']) $(o).classList.remove('show');
     startCpu(ch);
   };
-  $('cd-keep').onclick = () => { if (!cur) return; const ok = EK.Pool.add(cur.ch, 'rival'); $('cd-keep').disabled = true; $('cd-keep').textContent = ok ? 'ライバル帳に入れました' : '保存できませんでした'; refreshTitle(); };
+  $('cd-keep').onclick = () => { if (!cur) return; const ok = EK.Pool.add(cur.ch, 'rival'); $('cd-keep').disabled = true; $('cd-keep').textContent = ok ? T('keep_done2') : T('save_fail'); refreshTitle(); };
   $('cd-copy').onclick = () => cur && copyText(cur.meta.id, $('cd-copy'));
   // 通報・消す は、2回押して決める（まちがい防止）
   $('cd-report').onclick = async () => {
     const b = $('cd-report'); if (!cur) return;
-    if (!b.dataset.sure) { b.dataset.sure = '1'; b.textContent = 'もう一度押すと通報'; setTimeout(() => { delete b.dataset.sure; if (!b.disabled) b.textContent = '通報する'; }, 3000); return; }
+    if (!b.dataset.sure) { b.dataset.sure = '1'; b.textContent = T('report_sure'); setTimeout(() => { delete b.dataset.sure; if (!b.disabled) b.textContent = T('report'); }, 3000); return; }
     delete b.dataset.sure;
-    try { await EK.Store.report(cur.meta.id); b.disabled = true; b.textContent = '通報しました'; } catch (e) { $('cd-err').textContent = '通報できませんでした'; }
+    try { await EK.Store.report(cur.meta.id); b.disabled = true; b.textContent = T('report_done'); } catch (e) { $('cd-err').textContent = T('report_fail'); }
   };
   $('cd-del').onclick = async () => {
     const b = $('cd-del'); if (!cur) return;
-    if (!b.dataset.sure) { b.dataset.sure = '1'; b.textContent = 'もう一度押すと消えます'; setTimeout(() => { delete b.dataset.sure; b.textContent = 'このキャラを消す'; }, 3000); return; }
+    if (!b.dataset.sure) { b.dataset.sure = '1'; b.textContent = T('del_sure'); setTimeout(() => { delete b.dataset.sure; b.textContent = T('del_char'); }, 3000); return; }
     delete b.dataset.sure;
     try {
       const id = cur.meta.id; await EK.Store.remove(id);
       if (myChar && myChar.id === id) { myChar.id = ''; EK.saveChar(myChar); }
-      closeChar(); $('ov-find').classList.remove('show'); refreshTitle(); EK.toast('キャラを消しました');
+      closeChar(); $('ov-find').classList.remove('show'); refreshTitle(); EK.toast(T('del_done'));
       if ($('ov-gal').classList.contains('show')) galLoad(galSort);
-    } catch (e) { $('cd-err').textContent = e.message || '消せませんでした'; }
+    } catch (e) { $('cd-err').textContent = e.message || T('del_fail'); }
   };
 
   // ---------- みんなのキャラ ----------
@@ -788,20 +791,20 @@
   async function galLoad(sort, more) {
     galSort = sort;
     if (!more) { $('gal-grid').innerHTML = ''; galMore = null; }
-    $('gal-msg').textContent = '読みこんでいます…'; $('gal-more').hidden = true;
+    $('gal-msg').textContent = T('loading'); $('gal-more').hidden = true;
     try {
       const r = await EK.Store.list(sort, more ? galMore : null);
       if (galSort !== sort) return;
       galMore = r.more;
-      $('gal-grid').insertAdjacentHTML('beforeend', r.items.map(e => `<button data-id="${e.id}"><img alt="" src="${/^data:image\/(jpeg|png|webp);base64,/.test(e.th) ? e.th : ''}"><b>${esc(e.n || 'なまえなし')}</b><small>作：${esc(e.a || 'ななし')}</small><small>使われた ${e.uses}回</small></button>`).join(''));
-      $('gal-msg').textContent = $('gal-grid').children.length ? '' : 'まだ公開されたキャラがいません。キャラを完成させるときに「公開する」をえらぶと、ここにのります';
+      $('gal-grid').insertAdjacentHTML('beforeend', r.items.map(e => `<button data-id="${e.id}"><img alt="" src="${/^data:image\/(jpeg|png|webp);base64,/.test(e.th) ? e.th : ''}"><b>${esc(e.n || T('noname_c'))}</b><small>${T('by', { a: esc(e.a || T('noname')) })}</small><small>${T('uses', { n: e.uses })}</small></button>`).join(''));
+      $('gal-msg').textContent = $('gal-grid').children.length ? '' : T('gal_empty');
       $('gal-more').hidden = !galMore;
-    } catch (e) { $('gal-msg').textContent = e.message || '読みこめませんでした'; }
+    } catch (e) { $('gal-msg').textContent = e.message || T('load_fail'); }
   }
   $('gal-grid').onclick = async e => {
     const b = e.target.closest('button[data-id]'); if (!b || b.disabled) return;
     b.disabled = true;
-    try { openChar(await EK.Store.load(b.dataset.id)); } catch (er) { $('gal-msg').textContent = er.message || '読みこめませんでした'; }
+    try { openChar(await EK.Store.load(b.dataset.id)); } catch (er) { $('gal-msg').textContent = er.message || T('load_fail'); }
     b.disabled = false;
   };
 

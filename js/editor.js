@@ -5,8 +5,9 @@
 (function () {
   const { W, H, PX, PARTS, LIMBS, BONED, EXS, COLORS, MAX_JOINTS } = EK.CH;
   const PAIR = { armL: 'armR', armR: 'armL', legL: 'legR', legR: 'legL', ex1: 'ex2', ex2: 'ex1', ex3: 'ex4', ex4: 'ex3' };
-  const STAMPS = [['eyes', '👀 目'], ['tsuri', '😠 つり目'], ['kira', '✨ キラ目'], ['smile', '🙂 口'], ['gao', '😮 大口'], ['kiba', '🦷 キバ'], ['blush', '☺ ほっぺ'], ['star', '⭐ 星'], ['heart', '❤ ハート']];
+  const STAMPS = ['eyes', 'tsuri', 'kira', 'smile', 'gao', 'kiba', 'blush', 'star', 'heart'].map(k => [k, 'st_' + k]);
   const $ = id => document.getElementById(id);
+  const tr = (k, v) => (window.I18N ? I18N.t(k, v) : k);
   const cv = $('ed-canvas'), g = cv.getContext('2d');
   let ch = null, part = 'body', tool = 'pen', color = COLORS[0], size = 8, dpr = 1;
   let shape = 'line', shapeFill = false, stamp = 'eyes';
@@ -46,7 +47,7 @@
     g.globalAlpha = 1;
     // 図形のプレビュー
     if (shapeDrag) { g.save(); shapePath(g, shapeDrag.a, shapeDrag.b); if (shapeFill && shape !== 'line') { g.fillStyle = color; g.fill(); } g.strokeStyle = color; g.lineWidth = size; g.lineCap = 'round'; g.lineJoin = 'round'; g.stroke(); g.restore(); }
-    if (part === 'body') { g.fillStyle = 'rgba(59,42,32,.45)'; g.font = `900 ${12}px "M PLUS Rounded 1c", sans-serif`; g.textAlign = 'center'; g.fillText('●＝うで・あし・かざりがつく場所（「骨」で動かせる）', W / 2, H - 12); }
+    if (part === 'body') { g.fillStyle = 'rgba(59,42,32,.45)'; g.font = `900 ${12}px "M PLUS Rounded 1c", sans-serif`; g.textAlign = 'center'; g.fillText(tr('canvas_note'), W / 2, H - 12); }
     // 骨
     const boneMode = tool === 'bone', u = 1 / Math.max(1, z / z0);   // 拡大しても点は大きくなりすぎない
     for (const p of BONED) {
@@ -70,10 +71,10 @@
     // 道具ごとの、くわしい設定（説明の行に出す）
     const el = $('ed-bone-tip');
     el.classList.toggle('text', tool === 'bone');
-    if (tool === 'bone') el.innerHTML = part !== 'body' ? '<b>骨をタップ</b>：関節を足す／<b>関節</b>：ドラッグで曲げる・タップで消す（' + (ch.bones[part].length - 2) + '/' + MAX_JOINTS + '）／<b>黄色の●</b>：つく場所を動かす' : '<b>黄色の●</b>をドラッグすると、うで・あし・かざりのつく場所を動かせます';
-    else if (tool === 'shape') el.innerHTML = [['line', '／ 直線'], ['circle', '○ 丸'], ['rect', '□ 四角']].map(([k, t]) => `<button data-shape="${k}" class="${shape === k ? 'on' : ''}">${t}</button>`).join('') + `<button data-sfill="1" class="${shapeFill ? 'on' : ''}">中もぬる</button>`;
-    else if (tool === 'stamp') el.innerHTML = STAMPS.map(([k, t]) => `<button data-stamp="${k}" class="${stamp === k ? 'on' : ''}">${t}</button>`).join('');
-    else if (part[0] === 'e') el.innerHTML = `<button data-front="1" class="${ch.front[part] ? 'on' : ''}">${ch.front[part] ? '体の前に出ている' : '体の後ろにある'}（タップで切りかえ）</button>`;
+    if (tool === 'bone') el.innerHTML = part !== 'body' ? tr('bone_tip', { n: ch.bones[part].length - 2, m: MAX_JOINTS }) : tr('bone_tip_body');
+    else if (tool === 'shape') el.innerHTML = ['line', 'circle', 'rect'].map(k => `<button data-shape="${k}" class="${shape === k ? 'on' : ''}">${tr('sh_' + k)}</button>`).join('') + `<button data-sfill="1" class="${shapeFill ? 'on' : ''}">${tr('sh_fill')}</button>`;
+    else if (tool === 'stamp') el.innerHTML = STAMPS.map(([k, t]) => `<button data-stamp="${k}" class="${stamp === k ? 'on' : ''}">${tr(t)}</button>`).join('');
+    else if (part[0] === 'e') el.innerHTML = `<button data-front="1" class="${ch.front[part] ? 'on' : ''}">${tr(ch.front[part] ? 'front_on' : 'front_off')}</button>`;
     else el.innerHTML = '';
   }
   let lastTab = null;
@@ -82,10 +83,10 @@
     const isLimb = part !== 'body', st = $('ed-stat');
     if (isLimb) {
       const b = ch.bones[part], len = EK.boneLen(b), j = b.length - 2;
-      if (part[0] === 'e') st.innerHTML = 'かざり：当たり判定なし・ゆらゆらゆれる';
-      else if (part[0] === 'a') { const hit = 0.11 + 0.25 * (len / 100 / 1.2) + 0.05 * j; st.innerHTML = `とどく長さ <b>${Math.round(len)}</b>　当たるまで <b>${hit.toFixed(2)}秒</b>　関節 <b>${j}</b>`; }
-      else { const low = Math.max(...b.map(q => q[1])); st.innerHTML = `足の長さ <b>${Math.round(Math.max(20, low - b[0][1]))}</b>（長い＝速い・当たりやすい）　関節 <b>${j}</b>`; }
-    } else st.innerHTML = '上のほうが<b>頭</b>（当たるとクリティカル）';
+      if (part[0] === 'e') st.innerHTML = tr('stat_ex');
+      else if (part[0] === 'a') { const hit = 0.11 + 0.25 * (len / 100 / 1.2) + 0.05 * j; st.innerHTML = tr('stat_arm', { len: Math.round(len), hit: hit.toFixed(2), j }); }
+      else { const low = Math.max(...b.map(q => q[1])); st.innerHTML = tr('stat_leg', { len: Math.round(Math.max(20, low - b[0][1])), j }); }
+    } else st.innerHTML = tr('stat_body');
     document.querySelectorAll('#ed-tabs button').forEach(b => { const on = b.dataset.part === part; b.classList.toggle('on', on); if (on && b !== lastTab) { lastTab = b; const t = $('ed-tabs'); t.scrollTo({ left: b.offsetLeft - (t.clientWidth - b.offsetWidth) / 2, behavior: 'smooth' }); } });
     document.querySelectorAll('#ed-tools button[data-tool]').forEach(b => b.classList.toggle('on', b.dataset.tool === tool));
     document.querySelectorAll('#ed-colors button[data-c]').forEach(b => b.classList.toggle('on', b.dataset.c === color));
@@ -94,7 +95,7 @@
     $('ed-size-dot').style.background = tool === 'erase' ? '#fff' : color;
     $('ed-undo').disabled = !undo.length;
     $('ed-mirror').disabled = !PAIR[part];
-    $('ed-mirror').textContent = PAIR[part] ? EK.CH.NAMES[PAIR[part]] + 'へコピー' : '左右コピー';
+    $('ed-mirror').textContent = PAIR[part] ? tr('mirror_to', { p: EK.CH.NAMES[PAIR[part]] }) : tr('mirror');
   }
   $('ed-bone-tip').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
@@ -184,7 +185,7 @@
       for (const n of [q - 1, q + 1, q - w, q + w]) { if (n < 0 || n >= w * h || seen[n]) continue; if ((n % w === 0 && x === w - 1) || (x === 0 && n % w === w - 1)) continue; seen[n] = 1; if (same(n * 4)) st.push(n); }
       if (list.length > w * h * 0.6) break;
     }
-    if (t[3] < 40 && edge) { EK.toast && EK.toast('線でかこまれた所をぬってね'); return; }
+    if (t[3] < 40 && edge) { EK.toast && EK.toast(tr('fill_edge')); return; }
     snap();
     for (const q of list) { const i = q * 4; d[i] = nc[0]; d[i + 1] = nc[1]; d[i + 2] = nc[2]; d[i + 3] = 255; }
     ctx.putImageData(img, 0, 0);
@@ -224,12 +225,12 @@
         const r0 = ch.bones[q][0];
         if (Math.hypot(r0[0] - p[0], r0[1] - p[1]) < near()) { snap(q); rootDrag = { p: q, start: p, bones: ch.bones[q].map(v => v.slice()), img: copyCanvas(ch.layers[q]) }; return; }
       }
-      if (part === 'body') { EK.toast && EK.toast('黄色の●をドラッグすると、つく場所を動かせます'); return; }
+      if (part === 'body') { EK.toast && EK.toast(tr('root_tip')); return; }
       const b = ch.bones[part], j = nearJoint(p, b);
       if (j > 0) { snap(); boneDrag = { i: j, start: p, moved: false }; return; }
       const s = nearSeg(p, b);
       if (s) {
-        if (b.length - 2 >= MAX_JOINTS) { EK.toast && EK.toast('関節は' + MAX_JOINTS + 'こまで'); return; }
+        if (b.length - 2 >= MAX_JOINTS) { EK.toast && EK.toast(tr('joint_max', { n: MAX_JOINTS })); return; }
         const nb = b.slice(); nb.splice(s.i, 0, s.at.map(v => Math.round(v)));
         if (EK.boneOk(nb)) { snap(); ch.bones[part] = nb; boneDrag = { i: s.i, start: p, moved: true }; draw(); }
       }
@@ -274,7 +275,7 @@
     if (rootDrag) { const b = ch.bones[rootDrag.p]; if (b[0][0] === rootDrag.bones[0][0] && b[0][1] === rootDrag.bones[0][1]) undo.pop(); dropCanvas(rootDrag.img); rootDrag = null; draw(); }
     if (boneDrag) {
       const b = ch.bones[part];
-      if (!boneDrag.moved && boneDrag.i < b.length - 1) { const nb = b.slice(); nb.splice(boneDrag.i, 1); if (EK.boneOk(nb)) ch.bones[part] = nb; else EK.toast && EK.toast('その関節を消すと骨が重なります'); }
+      if (!boneDrag.moved && boneDrag.i < b.length - 1) { const nb = b.slice(); nb.splice(boneDrag.i, 1); if (EK.boneOk(nb)) ch.bones[part] = nb; else EK.toast && EK.toast(tr('joint_overlap')); }
       else if (!boneDrag.moved) undo.pop();
       boneDrag = null; draw();
     }
@@ -288,7 +289,9 @@
   $('ed-zfit').onclick = fit;
 
   // ---------- ボタン ----------
-  $('ed-tabs').innerHTML = PARTS.map(p => `<button data-part="${p}">${EK.CH.NAMES[p]}</button>`).join('');
+  const tabs = () => { $('ed-tabs').innerHTML = PARTS.map(p => `<button data-part="${p}">${EK.CH.NAMES[p]}</button>`).join(''); lastTab = null; };
+  tabs();
+  document.addEventListener('langchange', () => { tabs(); $('ed-color-free').title = tr('free_color'); if (ch && $('editor').classList.contains('active')) draw(); if (coachI >= 0) coachShow(); });
   $('ed-tabs').onclick = e => { const b = e.target.closest('button'); if (!b) return; part = b.dataset.part; draw(); };
   document.querySelectorAll('#ed-tools button[data-tool]').forEach(b => b.onclick = () => { tool = b.dataset.tool; draw(); });
   // パーツを ‹ › で切りかえ（タブは横にスライドもできる）
@@ -301,7 +304,7 @@
   $('ed-size-btn').onclick = e => { e.stopPropagation(); const h = $('ed-size-pop').hidden; closePops(); $('ed-size-pop').hidden = !h; $('ed-size-btn').classList.toggle('on', h); };
   $('ed-size-pop').addEventListener('pointerdown', e => e.stopPropagation());
   document.addEventListener('pointerdown', e => { if (!e.target.closest('#ed-menu, #ed-more, #ed-size-pop, #ed-size-btn')) closePops(); }, true);
-  $('ed-colors').innerHTML = COLORS.map(c => `<button data-c="${c}" style="background:${c}"></button>`).join('') + '<button id="ed-color-free" class="free" title="じゆうな色">🎨</button><input type="color" id="ed-color-in" value="#7c5cff">';
+  $('ed-colors').innerHTML = COLORS.map(c => `<button data-c="${c}" style="background:${c}"></button>`).join('') + '<button id="ed-color-free" class="free" title="' + tr('free_color') + '">🎨</button><input type="color" id="ed-color-in" value="#7c5cff">';
   $('ed-colors').onclick = e => {
     const b = e.target.closest('button'); if (!b) return;
     if (b.id === 'ed-color-free') { $('ed-color-in').click(); return; }
@@ -314,12 +317,12 @@
     const q = PAIR[part]; if (!q) return;
     const bb = EK.alphaGrid(ch.layers.body).box, ax = bb ? (bb[0] + bb[2]) / 2 : W / 2;
     const nb = ch.bones[part].map(v => [Math.round(2 * ax - v[0]), v[1]]);
-    if (!EK.boneOk(nb)) { EK.toast && EK.toast('反対がわがキャンバスからはみ出すのでコピーできません'); return; }
+    if (!EK.boneOk(nb)) { EK.toast && EK.toast(tr('mirror_out')); return; }
     snap(q);
     ch.bones[q] = nb; if (part[0] === 'e') ch.front[q] = ch.front[part];
     const x = ch.layers[q].getContext('2d'); x.clearRect(0, 0, W * PX, H * PX);
     x.save(); x.translate(2 * ax * PX, 0); x.scale(-1, 1); x.drawImage(ch.layers[part], 0, 0); x.restore();
-    EK.toast && EK.toast(EK.CH.NAMES[q] + 'にコピーしました');
+    EK.toast && EK.toast(tr('mirror_done', { p: EK.CH.NAMES[q] }));
     draw();
   };
   function finish() {
@@ -331,13 +334,13 @@
   $('ed-done').onclick = () => {
     if (raku) return finish();
     const empty = ['body'].filter(p => !EK.alphaGrid(ch.layers[p]).any);
-    if (empty.length && !$('ed-done').dataset.warned) { $('ed-done').dataset.warned = '1'; EK.toast && EK.toast(empty.map(p => EK.CH.NAMES[p]).join('・') + ' がまだ空っぽ。もう一度押すとそのまま進む'); return; }
+    if (empty.length && !$('ed-done').dataset.warned) { $('ed-done').dataset.warned = '1'; EK.toast && EK.toast(tr('empty_warn', { p: empty.map(p => EK.CH.NAMES[p]).join(tr('list_sep')) })); return; }
     delete $('ed-done').dataset.warned;
     finish();
   };
   $('ed-name').addEventListener('input', () => { dirty = true; });
   // らくがきバトル：時間が来たら、そのまま出す
-  function endRaku() { if (!raku) return; clearInterval(raku.tm); raku = null; $('editor').classList.remove('raku'); $('ed-done').textContent = '完成！'; $('ed-timer').hidden = true; }
+  function endRaku() { if (!raku) return; clearInterval(raku.tm); raku = null; $('editor').classList.remove('raku'); $('ed-done').textContent = tr('done'); $('ed-timer').hidden = true; }
   function rakuTick() {
     if (!raku) return;
     const left = Math.max(0, Math.ceil((raku.until - EK.now()) / 1000));
@@ -352,14 +355,14 @@
 
   // ---------- はじめてのガイド ----------
   const COACH = [
-    ['#ed-tabs', 'ここで描くパーツをえらびます。<b>頭と体・うで・あし・かざり</b>を、それぞれ描きます。', () => { part = 'body'; tool = 'pen'; }],
-    ['#ed-tools', '<b>ペン</b>で描く、<b>ぬる</b>でぬりつぶす、<b>図形</b>・<b>スタンプ</b>も使えます。', null],
-    ['#ed-canvas', 'うで・あしには、はじめから<b>黒い骨の線</b>があります。上から好きな色でぬれます（ぬらなければ黒い線のまま）。', () => { part = 'armR'; tool = 'pen'; }],
-    ['#ed-tools button[data-tool=bone]', '<b>骨</b>を押すと、骨を動かせます。', () => { tool = 'bone'; }],
-    ['#ed-canvas', '<b>骨をタップ</b>→関節がふえる<br><b>関節をドラッグ</b>→曲がる<br><b>黄色の●をドラッグ</b>→つく場所が動く', null],
-    ['#ed-stat', '腕は<b>長いほど遠くまで届く</b>けれど、<b>当たるまで時間がかかる</b>。関節が多いと当たる範囲が広い。ここに目安が出ます。', null],
-    ['#ed-more', '「…」には<b>おてほん</b>・<b>左右コピー</b>（反対の腕・足にうつす）・<b>全部消す</b>があります。', () => { part = 'body'; tool = 'pen'; }],
-    ['#ed-done', '2本指で拡大もできます。パーツは ‹ › か、タブを横にスライドして切りかえ。できたら<b>完成！</b>', null]
+    ['#ed-tabs', 'c1', () => { part = 'body'; tool = 'pen'; }],
+    ['#ed-tools', 'c2', null],
+    ['#ed-canvas', 'c3', () => { part = 'armR'; tool = 'pen'; }],
+    ['#ed-tools button[data-tool=bone]', 'c4', () => { tool = 'bone'; }],
+    ['#ed-canvas', 'c5', null],
+    ['#ed-stat', 'c6', null],
+    ['#ed-more', 'c7', () => { part = 'body'; tool = 'pen'; }],
+    ['#ed-done', 'c8', null]
   ];
   let coachI = -1;
   function coachShow() {
@@ -367,8 +370,8 @@
     if (st[2]) st[2](); draw();
     const el = document.querySelector(st[0]), r = el.getBoundingClientRect(), ring = $('coach-ring'), box = $('coach-box');
     ring.style.left = (r.left - 6) + 'px'; ring.style.top = (r.top - 6) + 'px'; ring.style.width = (r.width + 12) + 'px'; ring.style.height = (r.height + 12) + 'px';
-    $('coach-text').innerHTML = st[1]; $('coach-n').textContent = (coachI + 1) + ' / ' + COACH.length;
-    $('coach-next').textContent = coachI === COACH.length - 1 ? 'はじめる' : 'つぎへ';
+    $('coach-text').innerHTML = tr(st[1]); $('coach-n').textContent = (coachI + 1) + ' / ' + COACH.length;
+    $('coach-next').textContent = coachI === COACH.length - 1 ? tr('begin') : tr('next');
     const below = r.top + r.height / 2 < innerHeight / 2, bh = 130;
     box.style.top = (below ? Math.min(innerHeight - bh - 10, r.bottom + 14) : Math.max(10, r.top - bh - 14)) + 'px';
   }
@@ -388,7 +391,7 @@
       delete $('ed-done').dataset.warned; $('ed-menu').hidden = true;
       if (opt.until) {
         raku = { until: opt.until, tm: setInterval(rakuTick, 250) };
-        $('editor').classList.add('raku'); $('ed-done').textContent = 'できた！'; $('ed-timer').hidden = false; rakuTick();
+        $('editor').classList.add('raku'); $('ed-done').textContent = tr('dw_done'); $('ed-timer').hidden = false; rakuTick();
       }
       requestAnimationFrame(() => { layout(); let seen = false; try { seen = !!localStorage.getItem('ek_tut'); } catch (e) {} if (!seen && !opt.until) setTimeout(coachStart, 250); });
     },

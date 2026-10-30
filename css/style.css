@@ -282,3 +282,16 @@ button { font-family: inherit; font-weight: 800; color: inherit; cursor: pointer
 .t-id .gone { color: var(--red); font-weight: 800; font-size: 11px; }
 .t-id s { opacity: .6; }
 .my-ids button.gone { opacity: .55; } .my-ids button em { font-style: normal; color: var(--red); font-size: 11px; }
+
+/* ことばの切りかえ（ふせん風） */
+.langs{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:12px}
+.langs button{font:800 13px var(--round);background:#fff;color:var(--ink);border:2px solid var(--ink);border-radius:8px 12px 7px 11px;padding:3px 11px;cursor:pointer;box-shadow:2px 2px 0 rgba(43,42,53,.2)}
+.langs button[aria-pressed="true"]{background:var(--note-y)}
+/* 中国語：M PLUS にない字は丸ゴシックの Chiron GoRound TC で */
+html[data-lang="zh"]{--round:"M PLUS Rounded 1c","Chiron GoRound TC",sans-serif;--display:"Dela Gothic One","Chiron GoRound TC",sans-serif}
+/* 韓国語：題字は Black Han Sans、本文は手書き風の丸文字 Jua */
+html[data-lang="ko"]{--round:"Jua","M PLUS Rounded 1c",sans-serif;--display:"Black Han Sans","Dela Gothic One",sans-serif}
+html[data-lang="ko"] body, html[data-lang="ko"] button, html[data-lang="ko"] input{font-weight:400}
+.big-msg small{font-size:min(.36em,4.4vw);padding:0 10px}
+/* せまい画面（320px など）でも、ことばボタン4つを1行に */
+@media (max-width:340px){.langs{gap:4px}.langs button{padding:3px 7px;font-size:12px}}

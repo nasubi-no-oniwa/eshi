@@ -12,7 +12,7 @@ window.EK = window.EK || {};
   const PARTS = ['body', 'armL', 'armR', 'legL', 'legR', ...EXS];
   const LIMBS = ['armL', 'armR', 'legL', 'legR'];
   const BONED = [...LIMBS, ...EXS];
-  const NAMES = { body: '頭と体', armL: '左うで', armR: '右うで', legL: '左あし', legR: '右あし', ex1: 'かざり1', ex2: 'かざり2', ex3: 'かざり3', ex4: 'かざり4' };
+  const NAMES = {}; for (const p of PARTS) Object.defineProperty(NAMES, p, { get: () => I18N.t('p_' + p), enumerable: true });
   // 最初の版の座標 → 今の座標
   const sc = pts => pts.map(q => [Math.round(q[0] * K + OX), Math.round(q[1] * K + OY)]);
   // 最初のつなぎ目の場所（あとで自由に動かせる）
@@ -235,7 +235,7 @@ window.EK = window.EK || {};
     const out = {}; let c;
     // よわい：ぼうにんげん（短い手足・関節なし）
     if (!only || only === 'easy') {
-    c = EK.emptyChar(); c.name = 'ぼうくん';
+    c = EK.emptyChar(); c.name = I18N.t('smp_easy');
     pen(c, 'body', x => { blob(x, 150, 100, 46, '#fde68a'); face(x, 150, 96, 1); limbAlong(x, [[150, 146], [150, 248]], 10, INK); });
     c.bones.armL = [[118, 150], [70, 185]]; c.bones.armR = [[182, 150], [230, 185]];
     c.bones.legL = [[132, 245], [118, 335]]; c.bones.legR = [[168, 245], [182, 335]];
@@ -244,7 +244,7 @@ window.EK = window.EK || {};
     out.easy = c; }
     // ふつう：ロボット（ひじ・ひざ1つずつ）
     if (!only || only === 'normal') {
-    c = EK.emptyChar(); c.name = 'ロボ';
+    c = EK.emptyChar(); c.name = I18N.t('smp_normal');
     pen(c, 'body', x => {
       x.fillStyle = '#94a3b8'; x.strokeStyle = INK; x.lineWidth = 5;
       x.beginPath(); x.roundRect(108, 40, 84, 78, 14); x.fill(); x.stroke();
@@ -260,7 +260,7 @@ window.EK = window.EK || {};
     out.normal = c; }
     // つよい：たこ（長いうで・関節たくさん）
     if (!only || only === 'hard') {
-    c = EK.emptyChar(); c.name = 'タコまる';
+    c = EK.emptyChar(); c.name = I18N.t('smp_hard');
     pen(c, 'body', x => {
       x.fillStyle = '#ec4899'; x.strokeStyle = INK; x.lineWidth = 5; x.beginPath(); x.ellipse(150, 120, 62, 74, 0, 0, 7); x.fill(); x.stroke();
       x.beginPath(); x.ellipse(150, 222, 40, 34, 0, 0, 7); x.fill(); x.stroke();

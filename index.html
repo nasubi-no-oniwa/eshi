@@ -29,47 +29,48 @@
 <!-- タイトル -->
 <section id="title" class="screen active">
   <div class="title-box">
-    <p class="kana">え　し</p>
-    <h1 class="logo">絵<span>私</span></h1>
-    <p class="tag">描いて、骨を入れて、たたかえ。</p>
-    <div class="my-char"><canvas id="t-preview" width="150" height="200"></canvas><div><p id="t-name">まだキャラがいません</p><button class="btn sub" id="btn-edit">キャラをつくる</button><p class="t-id" id="t-id"></p><p class="pool" id="t-pool"></p></div></div>
+    <p class="kana" data-i="kana">え　し</p>
+    <h1 class="logo" data-ih="logo">絵<span>私</span></h1>
+    <p class="tag" data-i="tag">描いて、骨を入れて、たたかえ。</p>
+    <div class="my-char"><canvas id="t-preview" width="150" height="200"></canvas><div><p id="t-name" data-i="no_char">まだキャラがいません</p><button class="btn sub" id="btn-edit" data-i="make_char">キャラをつくる</button><p class="t-id" id="t-id"></p><p class="pool" id="t-pool"></p></div></div>
     <div class="menu">
-      <p class="menu-label">CPUとたいせん</p>
+      <p class="menu-label" data-i="vs_cpu">CPUとたいせん</p>
       <div class="lv-row">
-        <button class="btn lv" data-level="easy">よわい</button>
-        <button class="btn lv" data-level="normal">ふつう</button>
-        <button class="btn lv" data-level="hard">つよい</button>
+        <button class="btn lv" data-level="easy" data-i="easy">よわい</button>
+        <button class="btn lv" data-level="normal" data-i="normal">ふつう</button>
+        <button class="btn lv" data-level="hard" data-i="hard">つよい</button>
       </div>
-      <button class="btn online" id="btn-online">あいことばで対戦</button>
-      <div class="two-row"><button class="btn sub" id="btn-find">IDでよぶ</button><button class="btn sub" id="btn-gal">みんなのキャラ</button></div>
-      <button class="btn sub" id="btn-howto">あそびかた</button>
+      <button class="btn online" id="btn-online" data-i="online">あいことばで対戦</button>
+      <div class="two-row"><button class="btn sub" id="btn-find" data-i="find_btn">IDでよぶ</button><button class="btn sub" id="btn-gal" data-i="gal_btn">みんなのキャラ</button></div>
+      <button class="btn sub" id="btn-howto" data-i="howto">あそびかた</button>
     </div>
-    <a class="home-link" href="https://nasubi-no-oniwa.github.io/">🍆 なすびのお庭へ</a>
+    <a class="home-link" href="https://nasubi-no-oniwa.github.io/" data-i="home_e">🍆 なすびのお庭へ</a>
+    <div class="langs" role="group" aria-label="Language"><button type="button" data-lang="ja">日本語</button><button type="button" data-lang="en">English</button><button type="button" data-lang="zh">繁中</button><button type="button" data-lang="ko">한국어</button></div>
   </div>
 </section>
 
 <!-- キャラをつくる -->
 <section id="editor" class="screen">
   <div class="ed-top">
-    <button class="mini" id="ed-back">もどる</button>
-    <input id="ed-name" maxlength="8" placeholder="キャラの名前" autocomplete="off">
+    <button class="mini" id="ed-back" data-i="back">もどる</button>
+    <input id="ed-name" maxlength="8" placeholder="キャラの名前" data-ip="char_name" autocomplete="off">
     <b class="ed-timer" id="ed-timer" hidden>60</b>
-    <button class="mini" id="ed-help" aria-label="使いかた">？</button>
-    <button class="mini" id="ed-more" aria-label="そのほか">…</button>
-    <button class="mini go" id="ed-done">完成！</button>
+    <button class="mini" id="ed-help" aria-label="使いかた" data-ia="help">？</button>
+    <button class="mini" id="ed-more" aria-label="そのほか" data-ia="more">…</button>
+    <button class="mini go" id="ed-done" data-i="done">完成！</button>
   </div>
-  <div class="ed-tabbar"><button class="ed-arrow" id="ed-prev" aria-label="前のパーツ">‹</button><div id="ed-tabs" class="ed-tabs"></div><button class="ed-arrow" id="ed-next" aria-label="次のパーツ">›</button></div>
+  <div class="ed-tabbar"><button class="ed-arrow" id="ed-prev" aria-label="前のパーツ" data-ia="prev_part">‹</button><div id="ed-tabs" class="ed-tabs"></div><button class="ed-arrow" id="ed-next" aria-label="次のパーツ" data-ia="next_part">›</button></div>
   <div id="ed-wrap" class="ed-wrap"><canvas id="ed-canvas"></canvas>
     <div class="ed-tip" id="ed-bone-tip"></div>
-    <div class="ed-zoom"><button id="ed-zin">＋</button><button id="ed-zout">－</button><button id="ed-zfit">全体</button></div>
+    <div class="ed-zoom"><button id="ed-zin">＋</button><button id="ed-zout">－</button><button id="ed-zfit" data-i="fit">全体</button></div>
     <p class="ed-stat" id="ed-stat"></p>
-    <div id="ed-menu" class="ed-menu" hidden><button id="ed-sample">おてほんを出す</button><button id="ed-mirror">左右コピー</button><button id="ed-clear" class="warn">このパーツを全部消す</button></div>
+    <div id="ed-menu" class="ed-menu" hidden><button id="ed-sample" data-i="sample">おてほんを出す</button><button id="ed-mirror">左右コピー</button><button id="ed-clear" class="warn" data-i="clear_part">このパーツを全部消す</button></div>
   </div>
   <div id="ed-tools" class="ed-tools">
-    <button data-tool="pen"><i>✏️</i>ペン</button><button data-tool="fill"><i>🪣</i>ぬる</button><button data-tool="erase"><i>🧽</i>けす</button><button data-tool="shape"><i>🔷</i>図形</button><button data-tool="stamp"><i>⭐</i>スタンプ</button><button data-tool="bone" class="bone"><i>🦴</i>骨</button><button id="ed-undo" class="undo"><i>↶</i>もどす</button>
+    <button data-tool="pen"><i>✏️</i><span data-i="t_pen">ペン</span></button><button data-tool="fill"><i>🪣</i><span data-i="t_fill">ぬる</span></button><button data-tool="erase"><i>🧽</i><span data-i="t_erase">けす</span></button><button data-tool="shape"><i>🔷</i><span data-i="t_shape">図形</span></button><button data-tool="stamp"><i>⭐</i><span data-i="t_stamp">スタンプ</span></button><button data-tool="bone" class="bone"><i>🦴</i><span data-i="t_bone">骨</span></button><button id="ed-undo" class="undo"><i>↶</i><span data-i="t_undo">もどす</span></button>
   </div>
-  <div class="ed-paint"><div id="ed-colors" class="ed-colors"></div><button id="ed-size-btn" class="ed-size-btn" aria-label="ふとさ"><i id="ed-size-dot"></i></button>
-    <div class="ed-size" id="ed-size-pop" hidden><span>ふとさ</span><input type="range" id="ed-size" min="2" max="48" step="1" value="8"><b id="ed-size-n">8</b></div>
+  <div class="ed-paint"><div id="ed-colors" class="ed-colors"></div><button id="ed-size-btn" class="ed-size-btn" aria-label="ふとさ" data-ia="size"><i id="ed-size-dot"></i></button>
+    <div class="ed-size" id="ed-size-pop" hidden><span data-i="size">ふとさ</span><input type="range" id="ed-size" min="2" max="48" step="1" value="8"><b id="ed-size-n">8</b></div>
   </div>
 </section>
 
@@ -77,97 +78,97 @@
 <section id="fight" class="screen">
   <canvas id="view"></canvas>
   <div class="hud">
-    <div class="note s0"><b class="nm" id="nm0">あなた</b><div class="bars" id="bars0"></div></div>
-    <div class="mid"><div class="timer" id="timer">90</div><button class="mini quit" id="btn-quit">やめる</button><span class="watchers" id="watchers" hidden></span></div>
+    <div class="note s0"><b class="nm" id="nm0" data-i="you">あなた</b><div class="bars" id="bars0"></div></div>
+    <div class="mid"><div class="timer" id="timer">90</div><button class="mini quit" id="btn-quit" data-i="quit">やめる</button><span class="watchers" id="watchers" hidden></span></div>
     <div class="note s1"><b class="nm" id="nm1">CPU</b><div class="bars" id="bars1"></div></div>
   </div>
   <div id="hurt-flash"></div>
   <div id="pops"></div>
   <div id="cheers"></div>
-  <div class="watch-tag" id="watch-tag" hidden>観戦中</div>
+  <div class="watch-tag" id="watch-tag" hidden data-i="watching">観戦中</div>
   <div class="cheer-bar" id="cheer-bar" hidden><button data-e="0">👏</button><button data-e="1">🔥</button><button data-e="2">😂</button><button data-e="3">😱</button><button data-e="4">💪</button><button data-e="5">✨</button></div>
   <div class="big-msg" id="big-msg"></div>
   <div class="stick" id="stick"><i></i></div>
   <div class="pad">
-    <button id="b-jump" class="pb jump"><span>ジャンプ</span></button>
-    <button id="b-atk" class="pb atk"><span>パンチ</span></button>
+    <button id="b-jump" class="pb jump"><span data-i="jump">ジャンプ</span></button>
+    <button id="b-atk" class="pb atk"><span data-i="punch">パンチ</span></button>
   </div>
 </section>
 
 <div class="overlay" id="ov-result">
   <div class="card">
-    <h2 id="res-title">かち！</h2>
+    <h2 id="res-title" data-i="win">かち！</h2>
     <p id="res-sub"></p>
     <div class="gallery"><figure><canvas id="g0" width="150" height="200"></canvas><figcaption id="gn0"></figcaption></figure><b>VS</b><figure><canvas id="g1" width="150" height="200"></canvas><figcaption id="gn1"></figcaption></figure></div>
-    <button class="btn sub" id="btn-keep">相手のキャラをライバル帳に入れる</button>
-    <button class="btn sub" id="btn-savedraw" hidden>描いたキャラを保存する（IDがつく）</button>
-    <button class="btn primary" id="btn-again">もう一回</button>
+    <button class="btn sub" id="btn-keep" data-i="keep_one">相手のキャラをライバル帳に入れる</button>
+    <button class="btn sub" id="btn-savedraw" hidden data-i="save_draw">描いたキャラを保存する（IDがつく）</button>
+    <button class="btn primary" id="btn-again" data-i="again">もう一回</button>
     <p class="hint" id="again-msg"></p>
-    <button class="btn sub" id="btn-reedit">キャラをなおす</button>
-    <button class="btn sub" id="btn-title">タイトルへ</button>
+    <button class="btn sub" id="btn-reedit" data-i="edit_char">キャラをなおす</button>
+    <button class="btn sub" id="btn-title" data-i="to_title">タイトルへ</button>
   </div>
 </div>
 <div class="overlay" id="ov-online">
   <div class="card">
-    <h2 class="small">あいことばで対戦</h2>
+    <h2 class="small" data-i="online">あいことばで対戦</h2>
     <div id="online-form">
-      <div class="mode-pick" id="mode-pick"><button data-mode="normal" class="on">いまのキャラで</button><button data-mode="raku">らくがきバトル<small>ふたりで60秒で描く</small></button></div>
-      <label class="field-l">あいことば<input id="in-code" maxlength="20" autocomplete="off" placeholder="例：えし123"></label>
-      <label class="field-l">なまえ<input id="in-name" maxlength="8" autocomplete="off" placeholder="ななし"></label>
-      <p class="hint">同じあいことばを入れた人と対戦します。3人目からは<b>観戦</b>になります（応援スタンプを送れます）。<br>あそびかたは、さきに入った人のほうになります。</p>
-      <button class="btn primary wide" id="btn-join">はいる</button>
+      <div class="mode-pick" id="mode-pick"><button data-mode="normal" class="on" data-i="mode_now">いまのキャラで</button><button data-mode="raku" data-ih="mode_raku">らくがきバトル<small>ふたりで60秒で描く</small></button></div>
+      <label class="field-l"><span data-i="passcode">あいことば</span><input id="in-code" maxlength="20" autocomplete="off" placeholder="例：えし123" data-ip="ex_code"></label>
+      <label class="field-l"><span data-i="name">なまえ</span><input id="in-name" maxlength="8" autocomplete="off" placeholder="ななし" data-ip="noname"></label>
+      <p class="hint" data-ih="online_note">同じあいことばを入れた人と対戦します。3人目からは<b>観戦</b>になります（応援スタンプを送れます）。<br>あそびかたは、さきに入った人のほうになります。</p>
+      <button class="btn primary wide" id="btn-join" data-i="join">はいる</button>
     </div>
     <div id="online-wait" hidden>
-      <p class="wait-code">あいことば「<b id="wait-code"></b>」</p>
-      <p class="wait-msg" id="wait-msg">あいてを待っています…</p>
-      <button class="btn sub wide" id="btn-copy">さそうリンクをコピー</button>
+      <p class="wait-code"><span data-i="wait_pre">あいことば「</span><b id="wait-code"></b><span data-i="wait_post">」</span></p>
+      <p class="wait-msg" id="wait-msg" data-i="waiting">あいてを待っています…</p>
+      <button class="btn sub wide" id="btn-copy" data-i="copy_link">さそうリンクをコピー</button>
     </div>
     <p class="err" id="online-err"></p>
-    <button class="btn sub wide" id="btn-online-close">もどる</button>
+    <button class="btn sub wide" id="btn-online-close" data-i="back">もどる</button>
   </div>
 </div>
 <div class="overlay" id="ov-howto">
   <div class="card howto">
-    <h2>あそびかた</h2>
+    <h2 data-i="howto">あそびかた</h2>
     <ul>
-      <li><b>キャラをつくる</b>：頭と体・左うで・右うで・左あし・右あし（＋かざり2つ）を描きます。色は10色＋🎨で好きな色、ふとさは自由。「ペン」で描く、「ぬる」で線にかこまれた所をぬりつぶす、「けす」で消す。</li>
-      <li><b>骨</b>：うで・あしには、まっすぐな骨が入っています。骨をタップすると関節が増え、関節をドラッグすると曲がります（関節をタップで消す）。描いた絵は、近い骨にくっついて動きます。</li>
-      <li><b>うで</b>：骨が長いほど遠くまで届くけれど、当たるまで時間がかかる。関節が多いほど、当たる範囲が広くダメージも少し大きいけれど、やっぱり時間がかかる。</li>
-      <li><b>あし</b>：長いほど速く歩けて高くとべるけれど、体が大きくなって当たりやすい。関節が多いと、ふらふらしてまっすぐ歩けない（そのぶん当たりにくい）。</li>
-      <li><b>当たり</b>：攻撃が当たった腕・足が削れて、色が濃くなっていきます。0になるともげて吹っ飛びます。<b>頭</b>に当たると<b>クリティカル</b>（どこかの腕・足に大ダメージ＋少しよろける）。</li>
-      <li><b>もげると</b>：足1本→けんけんで遅い／足0本→動けない。うで1本→攻撃の間かくが長い／うで0本→体当たりだけ。<b>4本ぜんぶもげたら負け</b>。</li>
-      <li><b>90秒</b>たったら、残った腕・足の数が多いほうの勝ち（同じなら残りの合計）。</li>
-      <li><b>見かた</b>：キャラはいつも相手の方を向きます。足もとの矢印は歩いている向き。自分のまわりの白い円が、パンチが届く範囲（相手が入るとオレンジ）。相手の赤い円が光ったら、パンチが来る合図。</li>
-      <li><b>体力</b>：左上・右上のふせんの人形で、うで・あしの残りが分かります（緑→黄→赤、灰色はもげた）。</li>
-      <li><b>操作</b>：スマホは画面の左側をドラッグして移動、右下でパンチとジャンプ。ジャンプ中にパンチすると、ふりおろし攻撃。PCは 矢印/WASD で移動、J でパンチ、K かスペースでジャンプ。</li>
-      <li><b>キャラID</b>：完成すると、英数字8文字のIDがもらえます。IDを入れると、だれでもそのキャラを再現して使えます（自分のキャラにする・CPUの相手にする）。直して完成すると新しいIDになり、元のキャラは残ります。IDはスクショかメモをしておくと、機種変更しても戻せます。</li>
-      <li><b>みんなのキャラ</b>：「公開する」をえらんだキャラの一覧です（新しい順・人気順）。変な絵は「通報」できます。自分のキャラは、作ったスマホから消せます。しばらく使われていないキャラは、いっぱいになると古い順に消えます。</li>
-      <li><b>らくがきバトル</b>：あいことば対戦でえらべます。ふたり同時に<b>60秒</b>で描いて（おたがいに見えない）、「せーの」で発表してから戦います。体を描けなかったら黒い棒人間で戦います。</li>
-      <li><b>観戦</b>：同じあいことばに3人目から入ると観戦になります（10人まで）。応援スタンプを送れます。</li>
-      <li><b>かざり</b>：しっぽ・羽・角など、4つまで描けます。体の前に出すか後ろにするか選べます。当たり判定はなく、ゆらゆらゆれます。</li>
-      <li><b>描く道具</b>：「図形」で直線・丸・四角、「スタンプ」で目・口・星など。2本指（PCはホイール）で拡大・移動できます。</li>
-      <li><b>描くとき</b>：骨モードで黄色の●をドラッグすると、うで・あし・かざりのつく場所を動かせます（絵もいっしょに動く）。右上の「…」の「左右コピー」で反対がわにうつせます。</li>
+      <li data-ih="h1"><b>キャラをつくる</b>：頭と体・左うで・右うで・左あし・右あし（＋かざり2つ）を描きます。色は10色＋🎨で好きな色、ふとさは自由。「ペン」で描く、「ぬる」で線にかこまれた所をぬりつぶす、「けす」で消す。</li>
+      <li data-ih="h2"><b>骨</b>：うで・あしには、まっすぐな骨が入っています。骨をタップすると関節が増え、関節をドラッグすると曲がります（関節をタップで消す）。描いた絵は、近い骨にくっついて動きます。</li>
+      <li data-ih="h3"><b>うで</b>：骨が長いほど遠くまで届くけれど、当たるまで時間がかかる。関節が多いほど、当たる範囲が広くダメージも少し大きいけれど、やっぱり時間がかかる。</li>
+      <li data-ih="h4"><b>あし</b>：長いほど速く歩けて高くとべるけれど、体が大きくなって当たりやすい。関節が多いと、ふらふらしてまっすぐ歩けない（そのぶん当たりにくい）。</li>
+      <li data-ih="h5"><b>当たり</b>：攻撃が当たった腕・足が削れて、色が濃くなっていきます。0になるともげて吹っ飛びます。<b>頭</b>に当たると<b>クリティカル</b>（どこかの腕・足に大ダメージ＋少しよろける）。</li>
+      <li data-ih="h6"><b>もげると</b>：足1本→けんけんで遅い／足0本→動けない。うで1本→攻撃の間かくが長い／うで0本→体当たりだけ。<b>4本ぜんぶもげたら負け</b>。</li>
+      <li data-ih="h7"><b>90秒</b>たったら、残った腕・足の数が多いほうの勝ち（同じなら残りの合計）。</li>
+      <li data-ih="h8"><b>見かた</b>：キャラはいつも相手の方を向きます。足もとの矢印は歩いている向き。自分のまわりの白い円が、パンチが届く範囲（相手が入るとオレンジ）。相手の赤い円が光ったら、パンチが来る合図。</li>
+      <li data-ih="h9"><b>体力</b>：左上・右上のふせんの人形で、うで・あしの残りが分かります（緑→黄→赤、灰色はもげた）。</li>
+      <li data-ih="h10"><b>操作</b>：スマホは画面の左側をドラッグして移動、右下でパンチとジャンプ。ジャンプ中にパンチすると、ふりおろし攻撃。PCは 矢印/WASD で移動、J でパンチ、K かスペースでジャンプ。</li>
+      <li data-ih="h11"><b>キャラID</b>：完成すると、英数字8文字のIDがもらえます。IDを入れると、だれでもそのキャラを再現して使えます（自分のキャラにする・CPUの相手にする）。直して完成すると新しいIDになり、元のキャラは残ります。IDはスクショかメモをしておくと、機種変更しても戻せます。</li>
+      <li data-ih="h12"><b>みんなのキャラ</b>：「公開する」をえらんだキャラの一覧です（新しい順・人気順）。変な絵は「通報」できます。自分のキャラは、作ったスマホから消せます。しばらく使われていないキャラは、いっぱいになると古い順に消えます。</li>
+      <li data-ih="h13"><b>らくがきバトル</b>：あいことば対戦でえらべます。ふたり同時に<b>60秒</b>で描いて（おたがいに見えない）、「せーの」で発表してから戦います。体を描けなかったら黒い棒人間で戦います。</li>
+      <li data-ih="h14"><b>観戦</b>：同じあいことばに3人目から入ると観戦になります（10人まで）。応援スタンプを送れます。</li>
+      <li data-ih="h15"><b>かざり</b>：しっぽ・羽・角など、4つまで描けます。体の前に出すか後ろにするか選べます。当たり判定はなく、ゆらゆらゆれます。</li>
+      <li data-ih="h16"><b>描く道具</b>：「図形」で直線・丸・四角、「スタンプ」で目・口・星など。2本指（PCはホイール）で拡大・移動できます。</li>
+      <li data-ih="h17"><b>描くとき</b>：骨モードで黄色の●をドラッグすると、うで・あし・かざりのつく場所を動かせます（絵もいっしょに動く）。右上の「…」の「左右コピー」で反対がわにうつせます。</li>
     </ul>
-    <button class="btn primary" id="btn-howto-close">とじる</button>
+    <button class="btn primary" id="btn-howto-close" data-i="close">とじる</button>
   </div>
 </div>
 <div class="overlay" id="ov-save">
   <div class="card">
-    <h2 class="small" id="sv-title">キャラにIDをつける</h2>
+    <h2 class="small" id="sv-title" data-i="sv_title">キャラにIDをつける</h2>
     <canvas id="sv-prev" class="mini-prev" width="120" height="160"></canvas>
     <div id="sv-form">
-      <label class="field-l">作者名<input id="sv-author" maxlength="8" autocomplete="off" placeholder="ななし"></label>
-      <label class="chk"><input type="checkbox" id="sv-pub"> 「みんなのキャラ」に公開する</label>
-      <label class="chk" id="sv-mine-l" hidden><input type="checkbox" id="sv-mine" checked> 自分のキャラにする</label>
-      <p class="hint">IDを教えると、だれでもこのキャラを使えます。公開すると、IDを知らない人も一覧から使えます。</p>
-      <button class="btn primary wide" id="sv-ok">保存してIDをもらう</button>
-      <button class="btn sub wide" id="sv-skip">IDなしで使う</button>
+      <label class="field-l"><span data-i="author">作者名</span><input id="sv-author" maxlength="8" autocomplete="off" placeholder="ななし" data-ip="noname"></label>
+      <label class="chk"><input type="checkbox" id="sv-pub"> <span data-i="sv_pub">「みんなのキャラ」に公開する</span></label>
+      <label class="chk" id="sv-mine-l" hidden><input type="checkbox" id="sv-mine" checked> <span data-i="sv_mine">自分のキャラにする</span></label>
+      <p class="hint" data-i="sv_hint">IDを教えると、だれでもこのキャラを使えます。公開すると、IDを知らない人も一覧から使えます。</p>
+      <button class="btn primary wide" id="sv-ok" data-i="sv_ok">保存してIDをもらう</button>
+      <button class="btn sub wide" id="sv-skip" data-i="sv_skip">IDなしで使う</button>
     </div>
     <div id="sv-done" hidden>
-      <p class="hint">このキャラのID</p>
+      <p class="hint" data-i="sv_id_l">このキャラのID</p>
       <p class="big-id" id="sv-id"></p>
-      <button class="btn sub wide" id="sv-copy">IDをコピー</button>
-      <p class="hint warn">スクショかメモをしておくと、機種変更しても戻せます</p>
+      <button class="btn sub wide" id="sv-copy" data-i="copy_id">IDをコピー</button>
+      <p class="hint warn" data-i="sv_warn">スクショかメモをしておくと、機種変更しても戻せます</p>
       <button class="btn primary wide" id="sv-close">OK</button>
     </div>
     <p class="err" id="sv-err"></p>
@@ -175,21 +176,21 @@
 </div>
 <div class="overlay" id="ov-find">
   <div class="card">
-    <h2 class="small">IDでキャラをよぶ</h2>
-    <div class="id-row"><input id="in-id" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="英数字8文字"><button class="btn primary" id="btn-find-go">よぶ</button></div>
+    <h2 class="small" data-i="find_title">IDでキャラをよぶ</h2>
+    <div class="id-row"><input id="in-id" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="英数字8文字" data-ip="id_ph"><button class="btn primary" id="btn-find-go" data-i="call">よぶ</button></div>
     <p class="err" id="find-err"></p>
     <div id="my-ids" class="my-ids"></div>
-    <button class="btn sub wide" id="btn-find-close">もどる</button>
+    <button class="btn sub wide" id="btn-find-close" data-i="back">もどる</button>
   </div>
 </div>
 <div class="overlay" id="ov-gal">
   <div class="card gal">
-    <h2 class="small">みんなのキャラ</h2>
-    <div class="gal-tabs" id="gal-tabs"><button data-sort="t" class="on">新しい順</button><button data-sort="uses">人気順</button></div>
+    <h2 class="small" data-i="gal_title">みんなのキャラ</h2>
+    <div class="gal-tabs" id="gal-tabs"><button data-sort="t" class="on" data-i="gal_new">新しい順</button><button data-sort="uses" data-i="gal_pop">人気順</button></div>
     <div class="gal-grid" id="gal-grid"></div>
     <p class="hint" id="gal-msg"></p>
-    <button class="btn sub wide" id="gal-more" hidden>もっと見る</button>
-    <button class="btn sub wide" id="gal-close">もどる</button>
+    <button class="btn sub wide" id="gal-more" hidden data-i="gal_more">もっと見る</button>
+    <button class="btn sub wide" id="gal-close" data-i="back">もどる</button>
   </div>
 </div>
 <div class="overlay" id="ov-char">
@@ -197,32 +198,33 @@
     <canvas id="cd-prev" class="mini-prev" width="150" height="200"></canvas>
     <h2 class="small" id="cd-name"></h2>
     <p class="cd-meta" id="cd-meta"></p>
-    <button class="btn primary wide" id="cd-use">自分のキャラにする</button>
-    <p class="menu-label">CPUの相手にして戦う</p>
-    <div class="lv-row" id="cd-lv"><button class="btn lv" data-level="easy">よわい</button><button class="btn lv" data-level="normal">ふつう</button><button class="btn lv" data-level="hard">つよい</button></div>
-    <button class="btn sub wide" id="cd-keep">ライバル帳に入れる</button>
-    <div class="cd-small"><button class="mini" id="cd-copy">IDをコピー</button><button class="mini" id="cd-report">通報する</button><button class="mini warn" id="cd-del">このキャラを消す</button></div>
+    <button class="btn primary wide" id="cd-use" data-i="cd_use">自分のキャラにする</button>
+    <p class="menu-label" data-i="cd_cpu">CPUの相手にして戦う</p>
+    <div class="lv-row" id="cd-lv"><button class="btn lv" data-level="easy" data-i="easy">よわい</button><button class="btn lv" data-level="normal" data-i="normal">ふつう</button><button class="btn lv" data-level="hard" data-i="hard">つよい</button></div>
+    <button class="btn sub wide" id="cd-keep" data-i="cd_keep">ライバル帳に入れる</button>
+    <div class="cd-small"><button class="mini" id="cd-copy" data-i="copy_id">IDをコピー</button><button class="mini" id="cd-report" data-i="report">通報する</button><button class="mini warn" id="cd-del" data-i="del_char">このキャラを消す</button></div>
     <p class="err" id="cd-err"></p>
-    <button class="btn sub wide" id="cd-close">もどる</button>
+    <button class="btn sub wide" id="cd-close" data-i="back">もどる</button>
   </div>
 </div>
 <div class="overlay" id="ov-drawwait">
   <div class="card">
-    <h2 class="small" id="dw-title">ふたりが描いています</h2>
+    <h2 class="small" id="dw-title" data-i="dw_title0">ふたりが描いています</h2>
     <div class="dw-timer" id="dw-timer">60</div>
-    <p class="hint" id="dw-msg">描きおわったら、「せーの」で発表！</p>
+    <p class="hint" id="dw-msg" data-i="dw_msg0">描きおわったら、「せーの」で発表！</p>
     <div class="cheer-bar in-card" id="dw-cheer" hidden><button data-e="0">👏</button><button data-e="1">🔥</button><button data-e="2">😂</button><button data-e="3">😱</button><button data-e="4">💪</button><button data-e="5">✨</button></div>
-    <button class="btn sub wide" id="dw-quit">やめる</button>
+    <button class="btn sub wide" id="dw-quit" data-i="quit">やめる</button>
   </div>
 </div>
 <div class="overlay reveal-ov" id="ov-reveal">
   <div class="reveal">
-    <p class="rv-say" id="rv-say">せーの…</p>
+    <p class="rv-say" id="rv-say" data-i="rv_ready">せーの…</p>
     <div class="rv-row"><figure id="rvf0"><canvas id="rv0" width="150" height="200"></canvas><figcaption id="rvn0"></figcaption></figure><b>VS</b><figure id="rvf1"><canvas id="rv1" width="150" height="200"></canvas><figcaption id="rvn1"></figcaption></figure></div>
   </div>
 </div>
-<div id="coach" class="coach" hidden><div class="coach-ring" id="coach-ring"></div><div class="coach-box" id="coach-box"><p id="coach-text"></p><div class="coach-btns"><button class="mini" id="coach-skip">とばす</button><span id="coach-n"></span><button class="mini go" id="coach-next">つぎへ</button></div></div></div>
+<div id="coach" class="coach" hidden><div class="coach-ring" id="coach-ring"></div><div class="coach-box" id="coach-box"><p id="coach-text"></p><div class="coach-btns"><button class="mini" id="coach-skip" data-i="skip">とばす</button><span id="coach-n"></span><button class="mini go" id="coach-next" data-i="next">つぎへ</button></div></div></div>
 <div id="toast" class="toast"></div>
+<script src="js/i18n.js"></script>
 <script src="lib/three.min.js"></script>
 <script src="js/char.js"></script>
 <script src="js/editor.js"></script>

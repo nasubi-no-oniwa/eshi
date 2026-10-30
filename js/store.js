@@ -18,10 +18,10 @@
   EK.cleanId = s => String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
   EK.isId = s => /^[A-Z0-9]{8}$/.test(s) && [...s].every(c => ABC.includes(c));
   // Firebase（あいことば対戦と同じ場所）
-  function loadScript(src) { return new Promise((res, rej) => { const el = document.createElement('script'); el.src = src; el.onload = res; el.onerror = () => rej(new Error('通信できませんでした。電波のよいところでもう一度ためしてください')); document.head.appendChild(el); }); }
+  function loadScript(src) { return new Promise((res, rej) => { const el = document.createElement('script'); el.src = src; el.onload = res; el.onerror = () => rej(new Error(I18N.t('err_net'))); document.head.appendChild(el); }); }
   EK.getDb = async () => {
     if (EK._db) return EK._db;
-    if (!EK.FIREBASE_CONFIG) throw new Error('通信の準備ができていません');
+    if (!EK.FIREBASE_CONFIG) throw new Error(I18N.t('err_prep'));
     const v = '10.12.2';
     if (!window.firebase || !firebase.database) {
       await loadScript('https://www.gstatic.com/firebasejs/' + v + '/firebase-app-compat.js');
@@ -53,8 +53,8 @@
       const db = await this.getDb();
       let d = EK.packChar(ch, 0.75);
       if (d.length > 440000) d = EK.packChar(ch, 0.5);      // 色が多くて大きいときは少し小さくして保存
-      if (d.length > 440000) throw new Error('絵が大きすぎて保存できません（色をぬる所を少し減らしてね）');
-      const name = String(ch.name || '').slice(0, 8), a = String(opt.author || '').trim().slice(0, 8) || 'ななし';
+      if (d.length > 440000) throw new Error(I18N.t('err_big'));
+      const name = String(ch.name || '').slice(0, 8), a = String(opt.author || '').trim().slice(0, 8) || I18N.t('noname');
       const key = rnd(24);
       // キャラ・かぎ・一覧・数を、1回でまとめて書く（数は「本当に増えたとき」しか増やせないルール）
       for (let tries = 0; tries < 8; tries++) {
@@ -73,7 +73,7 @@
         this.tidy().catch(() => {});
         return id;
       }
-      throw new Error('IDがつくれませんでした。もう一度ためしてね');
+      throw new Error(I18N.t('err_noid'));
     },
     // 消す（キャラ・一覧・かぎを消して、「消えた理由」を残す。数も1へらす）
     async drop(id, why) {
@@ -91,15 +91,15 @@
     async goneMsg(id) {
       const db = await this.getDb();
       const g = (await db.ref('eshi_gone/' + id).once('value')).val();
-      if (g && g.w === 'full') return 'このキャラは、保管庫がいっぱいになったため削除されました（長く使われていなかったキャラから順に消えます）';
-      if (g && g.w === 'del') return 'このキャラは、作った人が削除しました';
-      return 'そのIDのキャラは見つかりませんでした（IDをたしかめてね）';
+      if (g && g.w === 'full') return I18N.t('gone_full');
+      if (g && g.w === 'del') return I18N.t('gone_del');
+      return I18N.t('gone_nf');
     },
     // まだあるか（タイトルや自分のID一覧で使う）
     async exists(id) { try { const db = await this.getDb(); return !!(await db.ref('eshi_c/' + id + '/t').once('value')).val(); } catch (e) { return null; } },
     // IDでよぶ
     async load(id) {
-      id = EK.cleanId(id); if (!EK.isId(id)) throw new Error('IDは英数字8文字です');
+      id = EK.cleanId(id); if (!EK.isId(id)) throw new Error(I18N.t('id_bad'));
       const db = await this.getDb();
       const s = await db.ref('eshi_c/' + id).once('value'), v = s.val();
       if (!v || !v.d) throw new Error(await this.goneMsg(id));
@@ -142,12 +142,12 @@
     reported(id) { return ls.get('ek_rep', []).includes(id); },
     // 作ったスマホから消す
     async remove(id) {
-      const key = ls.get('ek_own', {})[id]; if (!key) throw new Error('このキャラは、作ったスマホからだけ消せます');
+      const key = ls.get('ek_own', {})[id]; if (!key) throw new Error(I18N.t('del_own'));
       const db = await this.getDb();
       await db.ref('eshi_del/' + id).set(key);
       const ok = await this.drop(id, 'del');
       await db.ref('eshi_del/' + id).remove();
-      if (!ok) throw new Error('消せませんでした。通信を確認して、もう一度ためしてね');
+      if (!ok) throw new Error(I18N.t('del_net'));
       const own = ls.get('ek_own', {}); delete own[id]; ls.set('ek_own', own);
       ls.set('ek_mine', this.mine().filter(e => e.id !== id));
     },
